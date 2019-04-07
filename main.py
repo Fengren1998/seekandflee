@@ -3,6 +3,7 @@ import random as rng
 import math
 
 pygame.init()
+vec = pygame.math.Vector2
 
 display_width = 800
 display_height = 600
@@ -35,7 +36,7 @@ class Object:
         self.max_v = 5
         self.facing = rng.uniform(0, 6.28319)
 
-        self.steerer_dist = 50
+        self.steerer_dist = 55
         self.steerer_x = 0
         self.steerer_y = 0
         self.steer_x = 0
@@ -51,12 +52,14 @@ class Object:
         return degree * (math.pi/180)
 
     def angle_2_front(self):
-        future_y = self.v_y - self.pos_y
-        future_x = self.v_x - self.pos_x
+        future_y = self.v_y + self.pos_y
+        future_x = self.v_x + self.pos_x
         return math.atan2(future_y - self.pos_y, future_x - self.pos_x)
 
     def angle_2_target(self):
-        return math.atan2(self.target.pos_y - self.steerer_y, self.target.pos_x - self.steerer_x)
+        #return math.atan2(self.target.pos_y - self.steerer_y, self.target.pos_x - self.steerer_x)
+        xx, yy = pygame.mouse.get_pos()
+        return math.atan2(yy - self.steerer_y, xx - self.steerer_x)
 
     def steerer_pos(self):
         self.steerer_x = self.pos_x + self.steerer_dist * math.cos(self.facing)
@@ -67,38 +70,26 @@ class Object:
         self.steer_y = self.steerer_y + self.steerer_dist * math.cos(self.angle_2_target())
 
     def update(self):
+
         # Resolve the angles
         self.facing = self.angle_2_front()
         self.steerer_pos()
         self.steer_pos()
 
-        self.target_x, self.target_y = self.target.pos_x, self.target.pos_y
-        if self.hunter == True:
-            self.f_x = (self.target_x - self.pos_x)/self.weight
-            self.f_y = (self.target_y - self.pos_y)/self.weight
-        elif self.hunter == False:
-            self.f_x = -(self.target_x - self.pos_x)/self.weight
-            self.f_y = -(self.target_y - self.pos_y)/self.weight
+        self.target_x, self.target_y = self.steer_x, self.steer_y
 
         if self.hunter == True:
-            raw_x = [self.target_x, self.pos_x]
-            norm_x = [float(i)/sum(raw_x) for i in raw_x]
-            raw_y = [self.target_y, self.pos_y]
-            norm_y = [float(i)/sum(raw_y) for i in raw_y]
+            self.f_x = (self.target_x - self.pos_x)
+            self.f_y = (self.target_y - self.pos_y)
         elif self.hunter == False:
-            raw_x = [-self.target_x, -self.pos_x]
-            norm_x = [float(i)/sum(raw_x) for i in raw_x]
-            raw_y = [-self.target_y, -self.pos_y]
-            norm_y = [float(i)/sum(raw_y) for i in raw_y]
+            self.f_x = -(self.target_x - self.pos_x)
+            self.f_y = -(self.target_y - self.pos_y)
 
-        desired_v_x = (raw_x[0] - raw_x[1]) * self.max_v
-        desired_v_y = (raw_y[0] - raw_y[1]) * self.max_v
+        self.a_x = self.f_x
+        self.a_y = self.f_y
 
-        self.a_x = desired_v_x - self.v_x
-        self.a_y = desired_v_y - self.v_y
-
-        self.v_x = self.v_x + self.a_x
-        self.v_y = self.v_y + self.a_y
+        self.v_x = self.a_x
+        self.v_y = self.a_y
         negative = self.max_v - (2 * self.max_v)
         if self.v_x > self.max_v:
             self.v_x = self.max_v
@@ -144,6 +135,10 @@ while not crashed:
     Evility.update()
     Princess.display()
     Evility.display()
+    pygame.draw.line(gameDisplay, (255,0,255), (Evility.pos_x, Evility.pos_y), (Evility.steerer_x, Evility.steerer_y), 5)
+    pygame.draw.line(gameDisplay, (255,0,0), (Evility.steerer_x, Evility.steerer_y), (Evility.steer_x, Evility.steer_y), 5)
+
+    print('X: ' + str(Evility.pos_x) + ' Y: ' + str(Evility.pos_y) + ' Steerx: ' + str(Evility.steer_x) + ' Steery: ' + str(Evility.steer_y) + ' Angle: ' + str(math.degrees(Evility.angle_2_target())))
 
 
     pygame.display.update()
