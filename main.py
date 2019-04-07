@@ -125,9 +125,9 @@ class Object:
         pygame.draw.line(gameDisplay, (255,0,255), self.p, self.steerer, 5)
         pygame.draw.line(gameDisplay, (255,0,0), self.steerer, self.steer, 5)
 
-good = pygame.image.load('heavy_object.png')
-evil = pygame.image.load('heavy_object_evil.png')
-catch = pygame.image.load('catch.png')
+good = pygame.image.load('data/heavy_object.png')
+evil = pygame.image.load('data/heavy_object_evil.png')
+catch = pygame.image.load('data/catch.png')
 
 Evility = Object(evil)
 Princess = Object(good, Evility, True)
